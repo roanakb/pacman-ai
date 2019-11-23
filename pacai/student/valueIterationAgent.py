@@ -32,7 +32,7 @@ class ValueIterationAgent(ValueEstimationAgent):
     """
 
     def __init__(self, index, mdp, discountRate = 0.9, iters = 100, **kwargs):
-        super().__init__(index)
+        super().__init__(index, **kwargs)
 
         self.mdp = mdp
         self.discountRate = discountRate
@@ -40,7 +40,14 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.values = counter.Counter()  # A Counter is a dict with default 0
 
         # Compute the values here.
-        raise NotImplementedError()
+        states = mdp.getStates()
+        for i in range(iters):
+            vals = counter.Counter()
+            for state in states:
+                action = self.getAction(state)
+                if action:
+                    vals[state] = self.getQValue(state, action)
+            self.values = vals
 
     def getValue(self, state):
         """
@@ -55,3 +62,28 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
 
         return self.getPolicy(state)
+
+    def getPolicy(self, state):
+        if self.mdp.isTerminal(state):
+            return None
+        else:
+            actions = self.mdp.getPossibleActions(state)
+            max = -float('inf')
+            maxAction = actions[0]
+            for action in actions:
+                value = self.getQValue(state, action)
+                if value >= max:
+                    max = value
+                    maxAction = action
+            return maxAction
+
+    def getQValue(self, state, action):
+        qVal = 0
+        t = self.mdp.getTransitionStatesAndProbs(state, action)
+        for state_prob in t:
+            st = state_prob[0]
+            prob = state_prob[1]
+            reward = self.mdp.getReward(state, action, st)
+            value = self.getValue(st)
+            qVal += prob * (reward + self.discountRate * value)
+        return qVal

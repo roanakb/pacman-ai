@@ -11,31 +11,39 @@ NOT_POSSIBLE = None
 
 def question2():
     """
-    [Enter a description of what you did here.]
+    With 0 noise, our agent will never worry about making an unintended move,
+    and not be scared of falling off the bridge.
+    This allows the agent to cross the bridge with full confidence.
     """
 
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0
 
     return answerDiscount, answerNoise
 
 def question3a():
     """
-    [Enter a description of what you did here.]
+    By decreasing noise, we can make the agent choose riskier routes
+    as the risk is decreased. We then make the agent
+    take the smaller reward in less moves by increasing the discount rate,
+    as this increases the penalty for movement.
     """
 
-    answerDiscount = 0.9
-    answerNoise = 0.2
+    answerDiscount = 0.3
+    answerNoise = 0.01
     answerLivingReward = 0.0
 
     return answerDiscount, answerNoise, answerLivingReward
 
 def question3b():
     """
-    [Enter a description of what you did here.]
+    By significantly increasing the discount rate
+    from the default, we are able to force the agent to choose a
+    smaller reward in less moves because there is a harsher
+    penalty for making moves.
     """
 
-    answerDiscount = 0.9
+    answerDiscount = 0.2
     answerNoise = 0.2
     answerLivingReward = 0.0
 
@@ -43,18 +51,20 @@ def question3b():
 
 def question3c():
     """
-    [Enter a description of what you did here.]
+    By simply reducing the noise from the default,
+    we can reduce the agent's risk of falling off the cliff
+    so that the agent chooses to take that route.
     """
 
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0.01
     answerLivingReward = 0.0
 
     return answerDiscount, answerNoise, answerLivingReward
 
 def question3d():
     """
-    [Enter a description of what you did here.]
+    This default value avoids the cliff and prefers the distant exit.
     """
 
     answerDiscount = 0.9
@@ -65,24 +75,23 @@ def question3d():
 
 def question3e():
     """
-    [Enter a description of what you did here.]
+    By significantly increasing noise, we can make the agent essentially do
+    nothing since his policies have such a small effect.
     """
 
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0.9999
     answerLivingReward = 0.0
 
     return answerDiscount, answerNoise, answerLivingReward
 
 def question6():
     """
-    [Enter a description of what you did here.]
+    There was no possible combination of (epsilon, learning rate) that allowed
+    the learning rate to be learned in 50 iterations
     """
 
-    answerEpsilon = 0.3
-    answerLearningRate = 0.5
-
-    return answerEpsilon, answerLearningRate
+    return NOT_POSSIBLE
 
 if __name__ == '__main__':
     questions = [
