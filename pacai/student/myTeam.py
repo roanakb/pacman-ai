@@ -1,6 +1,10 @@
-from pacai.core import distance
 from pacai.util import reflection
 from pacai.agents.capture.capture import CaptureAgent
+from pacai.agents.capture.reflex import ReflexCaptureAgent
+from pacai.util import counter
+from pacai.agents.capture.reflex import ReflexCaptureAgent
+from pacai.core.directions import Directions
+from pacai.util import counter
 
 def createTeam(firstIndex, secondIndex, isRed,
         first = 'pacai.agents.capture.dummy.DummyAgent',
@@ -13,116 +17,91 @@ def createTeam(firstIndex, secondIndex, isRed,
     """
 
     firstAgent = OffensiveAgent(firstIndex)
-    secondAgent = reflection.qualifiedImport(second)
+    secondAgent = DefensiveReflexAgent(secondIndex)
 
     return [
         firstAgent,
-        secondAgent(secondIndex)
+        secondAgent,
     ]
 
+class OffensiveAgent(ReflexCaptureAgent):
+    """
+      A reflex agent that seeks food.
+      This agent will give you an idea of what an offensive agent might look like,
+      but it is by no means the best or only way to build an offensive agent.
+      """
 
-
-class OffensiveAgent(CaptureAgent):
-
-    def __init__(self, index, evalFn = 'pacai.core.eval.score', depth = 2):
+    def __init__(self, index, **kwargs):
         super().__init__(index)
-        self._evaluationFunction = reflection.qualifiedImport(evalFn)
-        self._treeDepth = int(depth)
 
-    def registerInitialState(self, gameState):
-        """
-        This method handles the initial setup of the agent and populates useful fields,
-        such as the team the agent is on and the `pacai.core.distanceCalculator.Distancer`.
-
-        IMPORTANT: If this method runs for more than 15 seconds, your agent will time out.
-        """
-
-        super().registerInitialState(gameState)
-
-    def chooseAction(self, gameState):
-        action = self.getAct(gameState)
-        print(action)
-        return action
-
-    def getEvaluationFunction(self):
-        return self.betterEvaluationFunction
-
-    def getTreeDepth(self):
-        return self._treeDepth
-
-    def getAct(self, state):
-        succs = state.getLegalActions(self.index)
-        depth = 0
-        v = -float('inf')
-        pinf = float('inf')
-        ninf = -float('inf')
-        bestaction = ''
-        for s in succs:
-            if s != 'Stop':
-                j = state.generateSuccessor(self.index, s)
-                m = self.max_value(j, depth, ninf, pinf)
-                w = v
-                v = max(v, m)
-                if v > w:
-                    bestaction = s
-        return bestaction
-
-    def min_value(self, state, depth, agentind, alpha, beta):
-        actions = state.getLegalActions(agentind)
-        if depth == self.getTreeDepth() or len(actions) == 0:
-            j = self.getEvaluationFunction()(state)
-            return j
-        v = float('inf')
-        numagents = len(state._agentStates)
-        if agentind < (numagents - 1):
-            for action in actions:
-                if action != 'Stop':
-                    newstate = state.generateSuccessor(agentind, action)
-                    values = self.min_value(newstate, depth, agentind + 1, alpha, beta)
-                    v = min(v, values)
-                    if v <= alpha:
-                        return v
-                    beta = min(beta, v)
-        else:
-            for action in actions:
-                if action != 'Stop':
-                    newstate = state.generateSuccessor(agentind, action)
-                    values = self.max_value(newstate, depth + 1, alpha, beta)
-                    v = min(v, values)
-                    if v <= alpha:
-                        return v
-                    beta = min(beta, v)
-        return v
-
-    def max_value(self, state, depth, alpha, beta):
-        actions = state.getLegalActions(self.index)
-        if depth == self.getTreeDepth() or len(actions) == 0:
-            return self.getEvaluationFunction()(state)
-        v = -(float('inf'))
-        for action in actions:
-            if action != 'Stop':
-                newstate = state.generateSuccessor(self.index, action)
-                values = self.min_value(newstate, depth + 1, 1, alpha, beta)
-                v = max(v, values)
-                if v >= beta:
-                    return v
-                alpha = max(alpha, v)
-        return v
-
-    def betterEvaluationFunction(self, currentGameState):
-        """
-        Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable evaluation function.
-
-        DESCRIPTION: <write something here so we know what you did>
-        """
+    def getFeatures(self, gameState, action):
+        features = counter.Counter()
+        successor = self.getSuccessor(gameState, action)
+        features['successorScore'] = self.getScore(successor)
 
         # Compute distance to the nearest food.
-        foodList = self.getFood(currentGameState).asList()
+        foodList = self.getFood(successor).asList()
 
         # This should always be True, but better safe than sorry.
         if (len(foodList) > 0):
-            myPos = currentGameState.getAgentState(self.index).getPosition()
+            myPos = successor.getAgentState(self.index).getPosition()
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-        if minDistance == 0:
-            return 10
-        return 1 / minDistance
+            features['distanceToFood'] = minDistance
+
+        return features
+
+
+    def getWeights(self, gameState, action):
+        return {
+            'successorScore': 100,
+            'distanceToFood': -1
+        }
+
+class DefensiveReflexAgent(ReflexCaptureAgent):
+    """
+    A reflex agent that tries to keep its side Pacman-free.
+    This is to give you an idea of what a defensive agent could be like.
+    It is not the best or only way to make such an agent.
+    """
+
+    def __init__(self, index, **kwargs):
+        super().__init__(index)
+
+    def getFeatures(self, gameState, action):
+        features = counter.Counter()
+        successor = self.getSuccessor(gameState, action)
+
+        myState = successor.getAgentState(self.index)
+        myPos = myState.getPosition()
+
+        # Computes whether we're on defense (1) or offense (0).
+        features['onDefense'] = 1
+        if (myState.isPacman()):
+            features['onDefense'] = 0
+
+        # Computes distance to invaders we can see.
+        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        invaders = [a for a in enemies if a.isPacman() and a.getPosition() is not None]
+        features['numInvaders'] = len(invaders)
+
+        if (len(invaders) > 0):
+            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+            features['invaderDistance'] = min(dists)
+
+        if (action == Directions.STOP):
+            features['stop'] = 1
+
+        rev = Directions.REVERSE[gameState.getAgentState(self.index).getDirection()]
+        if (action == rev):
+            features['reverse'] = 1
+
+        return features
+
+    def getWeights(self, gameState, action):
+        return {
+            'numInvaders': -1000,
+            'onDefense': 100,
+            'invaderDistance': -10,
+            'stop': -100,
+            'reverse': -2
+        }
