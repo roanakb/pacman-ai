@@ -1,5 +1,7 @@
 from pacai.util import reflection
 from pacai.agents.capture.capture import CaptureAgent
+from pacai.agents.capture.reflex import ReflexCaptureAgent
+from pacai.util import counter
 
 def createTeam(firstIndex, secondIndex, isRed,
         first = 'pacai.agents.capture.dummy.DummyAgent',
@@ -11,12 +13,43 @@ def createTeam(firstIndex, secondIndex, isRed,
     and will be False if the blue team is being created.
     """
 
-    firstAgent = reflection.qualifiedImport(first)
+    firstAgent = OffensiveAgent(firstIndex)
     secondAgent = reflection.qualifiedImport(second)
 
     return [
-        firstAgent(firstIndex),
+        firstAgent,
         secondAgent(secondIndex),
     ]
 
 class OffensiveAgent(CaptureAgent):
+    """
+      A reflex agent that seeks food.
+      This agent will give you an idea of what an offensive agent might look like,
+      but it is by no means the best or only way to build an offensive agent.
+      """
+
+    def __init__(self, index, **kwargs):
+        super().__init__(index)
+
+    def getFeatures(self, gameState, action):
+        features = counter.Counter()
+        successor = self.getSuccessor(gameState, action)
+        features['successorScore'] = self.getScore(successor)
+
+        # Compute distance to the nearest food.
+        foodList = self.getFood(successor).asList()
+
+        # This should always be True, but better safe than sorry.
+        if (len(foodList) > 0):
+            myPos = successor.getAgentState(self.index).getPosition()
+            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+            features['distanceToFood'] = minDistance
+
+        return features
+
+
+    def getWeights(self, gameState, action):
+        return {
+            'successorScore': 100,
+            'distanceToFood': -1
+        }
