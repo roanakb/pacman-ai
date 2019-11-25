@@ -47,9 +47,7 @@ class OffensiveAgent(ReflexCaptureAgent):
             myPos = successor.getAgentState(self.index).getPosition()
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
             features['distanceToFood'] = minDistance
-
         return features
-
 
     def getWeights(self, gameState, action):
         return {
