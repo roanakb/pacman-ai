@@ -51,6 +51,7 @@ class OffensiveAgent(ReflexCaptureAgent):
         # Computes distance to invaders we can see.
         enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
         enemyGhosts = [a for a in enemies if not a.isPacman() and a.getPosition() is not None]
+        features['numEnemyGhosts'] = len(enemyGhosts)
 
         if (len(enemyGhosts) > 0):
             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in enemyGhosts]
@@ -64,7 +65,8 @@ class OffensiveAgent(ReflexCaptureAgent):
         return {
             'successorScore': 100,
             'distanceToFood': -1,
-            'enemyDistance': .5
+            'enemyDistance': 0.3,
+            'numEnemyGhosts': -.5
         }
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
