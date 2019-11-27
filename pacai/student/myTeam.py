@@ -41,12 +41,40 @@ class OffensiveAgent(ReflexCaptureAgent):
 
         # Compute distance to the nearest food.
         foodList = self.getFood(successor).asList()
-
+        myAgent = successor.getAgentState(self.index)
+        myPos = myAgent.getPosition()
         # This should always be True, but better safe than sorry.
         if (len(foodList) > 0):
-            myPos = successor.getAgentState(self.index).getPosition()
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-            features['distanceToFood'] = minDistance
+            if minDistance == 0:
+                features['distanceToFood'] = 2
+            else:
+                features['distanceToFood'] = 1 / minDistance
+
+        features['numFood'] = -len(foodList)
+        opponents = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        defenders = [a for a in opponents if not a.isPacman() and a.getPosition() is not None]
+        if len(defenders) > 0:
+            minOppDist = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in defenders])
+            if minOppDist == 0:
+                features['distFromDefender'] = 10
+            else:
+                features['distFromDefender'] = 1 / minOppDist
+        else:
+            features['distFromDefender'] = -1
+        if not myAgent.isPacman():
+            features['distFromDefender'] = 1
+
+        capsuleList = self.getCapsules(successor)
+        if len(capsuleList) > 0:
+            minCapDist = min([self.getMazeDistance(myPos, food) for food in capsuleList])
+            if minCapDist == 0:
+                features['capsuleDist'] = 10
+            else:
+                features['capsuleDist'] = 1 / minCapDist
+        else:
+            features['capsuleDist'] = 10
+
 
         return features
 
@@ -54,7 +82,10 @@ class OffensiveAgent(ReflexCaptureAgent):
     def getWeights(self, gameState, action):
         return {
             'successorScore': 100,
-            'distanceToFood': -1
+            'distanceToFood': 8,
+            'numFood': 1,
+            'distFromDefender': -3,
+            'capsuleDist': 10
         }
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
