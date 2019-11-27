@@ -77,13 +77,18 @@ class OffensiveAgent(ReflexCaptureAgent):
 
         scaredOpps = [opp for opp in opponents if opp._scaredTimer >= 1]
         if len(scaredOpps) > 0:
-            minScaredOppDist = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in scaredOpps])
-            if minScaredOppDist == 0:
+            minScared = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in scaredOpps])
+            if minScared == 0:
                 features['distFromScaredDefender'] = 10
             else:
-                features['distFromScaredDefender'] = 1 / minScaredOppDist
+                features['distFromScaredDefender'] = 1 / minScared
         else:
             features['distFromScaredDefender'] = 10
+
+        if (action == Directions.STOP):
+            features['stop'] = 1
+        else:
+            features['stop'] = 0
 
         return features
 
@@ -95,7 +100,8 @@ class OffensiveAgent(ReflexCaptureAgent):
             'numFood': 1,
             'distFromDefender': -3,
             'capsuleDist': 10,
-            'distFromScaredDefender': 3
+            'distFromScaredDefender': 3,
+            'stop': -100,
         }
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
@@ -131,6 +137,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if (len(invaders) > 0):
             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
             features['invaderDistance'] = min(dists)
+            features['onDefense'] = 1
         else:
             features['onDefense'] = 0
             myPos = successor.getAgentState(self.index).getPosition()
