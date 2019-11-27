@@ -47,12 +47,24 @@ class OffensiveAgent(ReflexCaptureAgent):
             myPos = successor.getAgentState(self.index).getPosition()
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
             features['distanceToFood'] = minDistance
+
+        # Computes distance to invaders we can see.
+        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        enemyGhosts = [a for a in enemies if not a.isPacman() and a.getPosition() is not None]
+
+        if (len(enemyGhosts) > 0):
+            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in enemyGhosts]
+            features['enemyDistance'] = min(dists)
+        else:
+            features['enemyDistance'] = 0
+
         return features
 
     def getWeights(self, gameState, action):
         return {
             'successorScore': 100,
-            'distanceToFood': -1
+            'distanceToFood': -1,
+            'enemyDistance': .5
         }
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
