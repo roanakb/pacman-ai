@@ -120,6 +120,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if (myState.isPacman()):
             features['onDefense'] = 0
 
+        features['successorScore'] = 0
+        features['distanceToFood'] = 0
+
         # Computes distance to invaders we can see.
         enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
         invaders = [a for a in enemies if a.isPacman() and a.getPosition() is not None]
@@ -128,6 +131,14 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if (len(invaders) > 0):
             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
             features['invaderDistance'] = min(dists)
+        else:
+            features['onDefense'] = 0
+            myPos = successor.getAgentState(self.index).getPosition()
+            foodList = self.getFood(successor).asList()
+            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+            features['distanceToFood'] = minDistance
+            features['successorScore'] = self.getScore(successor)
+            features['invaderDistance'] = 0
 
         if (action == Directions.STOP):
             features['stop'] = 1
@@ -144,5 +155,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             'onDefense': 100,
             'invaderDistance': -10,
             'stop': -100,
-            'reverse': -2
+            'reverse': -2,
+            'distanceToFood': -1,
+            'successorScore': 102
         }
