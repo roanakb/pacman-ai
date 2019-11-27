@@ -102,6 +102,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         if (len(invaders) > 0):
             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
             features['invaderDistance'] = min(dists)
+            features['onDefense'] = 1
+            features['successorScore'] = 0
+            features['distanceToFood'] = 0
         else:
             features['onDefense'] = 0
             myPos = successor.getAgentState(self.index).getPosition()
