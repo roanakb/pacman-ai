@@ -1,7 +1,3 @@
-from pacai.util import reflection
-from pacai.agents.capture.capture import CaptureAgent
-from pacai.agents.capture.reflex import ReflexCaptureAgent
-from pacai.util import counter
 from pacai.agents.capture.reflex import ReflexCaptureAgent
 from pacai.core.directions import Directions
 from pacai.util import counter
@@ -48,13 +44,21 @@ class OffensiveAgent(ReflexCaptureAgent):
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
             features['distanceToFood'] = minDistance
 
-        return features
+        # get distance to opponent
+        opponentList = self.getOpponents(successor).asList()
 
+        if (len(opponentList) > 0):
+            myPos = successor.getAgentState(self.index).getPosition()
+            minDistance = min([self.getMazeDistance(myPos, opp) for opp in opponentList])
+            features['distanceToGhost'] = minDistance
+
+        return features
 
     def getWeights(self, gameState, action):
         return {
             'successorScore': 100,
-            'distanceToFood': -1
+            'distanceToFood': -1,
+            'distanceToGhost': -10
         }
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
@@ -100,8 +104,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def getWeights(self, gameState, action):
         return {
             'numInvaders': -1000,
-            'onDefense': 100,
-            'invaderDistance': -10,
+            'onDefense': 500,
+            'invaderDistance': -40,
             'stop': -100,
             'reverse': -2
         }
