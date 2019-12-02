@@ -1,7 +1,7 @@
-# from pacai.util import reflection
-# from pacai.agents.capture.capture import CaptureAgent
-# from pacai.agents.capture.reflex import ReflexCaptureAgent
-# from pacai.util import counter
+from pacai.util import reflection
+from pacai.agents.capture.capture import CaptureAgent
+from pacai.agents.capture.reflex import ReflexCaptureAgent
+from pacai.util import counter
 from pacai.agents.capture.reflex import ReflexCaptureAgent
 from pacai.core.directions import Directions
 from pacai.util import counter
@@ -40,10 +40,6 @@ class OffensiveAgent(ReflexCaptureAgent):
         features['successorScore'] = self.getScore(successor)
         # Compute distance to the nearest food.
         foodList = self.getFood(successor).asList()
-<<<<<<< Updated upstream
-
-        # This should always be True, but better safe than sorry.
-=======
         myAgent = successor.getAgentState(self.index)
         myPos = myAgent.getPosition()
         if myAgent.isPacman() is True:
@@ -52,13 +48,8 @@ class OffensiveAgent(ReflexCaptureAgent):
             features['isPacman'] = 0
 
             # This should always be True, but better safe than sorry.
->>>>>>> Stashed changes
         if (len(foodList) > 0):
-            myPos = successor.getAgentState(self.index).getPosition()
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-<<<<<<< Updated upstream
-            features['distanceToFood'] = minDistance
-=======
             if minDistance == 0:
                 features['distanceToFood'] = 2
             else:
@@ -98,20 +89,14 @@ class OffensiveAgent(ReflexCaptureAgent):
                 features['distFromScaredDefender'] = 1 / minScared
         else:
             features['distFromScaredDefender'] = 10
->>>>>>> Stashed changes
 
-        # Computes distance to invaders we can see.
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        enemyGhosts = [a for a in enemies if not a.isPacman() and a.getPosition() is not None]
-        features['numEnemyGhosts'] = len(enemyGhosts)
-
-        if (len(enemyGhosts) > 0):
-            dists = [self.getMazeDistance(myPos, a.getPosition()) for a in enemyGhosts]
-            features['enemyDistance'] = min(dists)
+        if (action == Directions.STOP):
+            features['stop'] = 1
         else:
-            features['enemyDistance'] = 0
+            features['stop'] = 0
 
         return features
+
 
     def getWeights(self, gameState, action):
         successor = self.getSuccessor(gameState, action)
@@ -144,11 +129,6 @@ class OffensiveAgent(ReflexCaptureAgent):
             }
         return {
             'successorScore': 100,
-<<<<<<< Updated upstream
-            'distanceToFood': -1,
-            'enemyDistance': 0.3,
-            'numEnemyGhosts': -.5
-=======
             'distanceToFood': 8,
             'numFood': 8,
             'distFromDefender': -10,
@@ -157,7 +137,6 @@ class OffensiveAgent(ReflexCaptureAgent):
             'distFromScaredDefender': 3,
             'stop': -100,
             'isPacman': 0
->>>>>>> Stashed changes
         }
 
 
@@ -271,11 +250,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             'stop': -100,
             'reverse': -2,
             'distanceToFood': -1,
-<<<<<<< Updated upstream
-            'successorScore': 102
-        }
-=======
             'successorScore': 102,
             'numScaredDefender': 0
         }
->>>>>>> Stashed changes
