@@ -242,7 +242,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             'numInvaders': -100,
             'onDefense': 100,
             'invaderDistance': -10,
-            'distFromDefender': -10,
+            'distFromDefender': -3,
             'distFromScaredDefender': 3,
             'numFood': 8,
             'numCapsules': -10,
