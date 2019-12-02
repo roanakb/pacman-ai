@@ -76,6 +76,7 @@ class OffensiveAgent(ReflexCaptureAgent):
             features['capsuleDist'] = 10
 
         scaredOpps = [opp for opp in opponents if opp._scaredTimer >= 1]
+
         if len(scaredOpps) > 0:
             minScared = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in scaredOpps])
             if minScared == 0:
