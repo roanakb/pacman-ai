@@ -250,13 +250,27 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def getWeights(self, gameState, action):
+        successor = self.getSuccessor(gameState, action)
+
+        myState = successor.getAgentState(self.index)
+        if myState.isScared() and not myState.isPacman():
+            return {
+                'numInvaders': -1000,
+                'onDefense': 100,
+                'invaderDistance': 10,
+                'stop': -100,
+                'reverse': -2,
+                'distFromDefender': -8,
+                'distanceToFood': -1,
+                'successorScore': 80
+            }
         return {
             'numInvaders': -1000,
             'onDefense': 100,
             'invaderDistance': -10,
             'stop': -100,
             'reverse': -2,
-            'distFromDefender': -2,
+            'distFromDefender': -15,
             'distanceToFood': -1,
-            'successorScore': 102
+            'successorScore': 80
         }
