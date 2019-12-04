@@ -1,10 +1,6 @@
 from pacai.agents.capture.reflex import ReflexCaptureAgent
-from pacai.core import distance
-from pacai.core.directions import Directions
-from pacai.util import reflection, counter
+from pacai.util import counter
 from pacai.util import util
-from pacai.agents.capture.capture import CaptureAgent
-from pacai.bin.capture import AgentRules
 
 def createTeam(firstIndex, secondIndex, isRed,
         first = 'pacai.agents.capture.dummy.DummyAgent',
@@ -57,8 +53,9 @@ class OffensiveAgent(ReflexCaptureAgent):
             ninf = -float('inf')
             bestaction = ''
             for action in actions:
-                if action != 'Stop' :
-                    value = self.max_value(gameState.generateSuccessor(self.index, action), depth, ninf, pinf)
+                if action != 'Stop':
+                    value = self.max_value(
+                        gameState.generateSuccessor(self.index, action), depth, ninf, pinf)
                     if value > max:
                         max = value
                         bestaction = action
@@ -80,7 +77,8 @@ class OffensiveAgent(ReflexCaptureAgent):
                 return self.evaluate(state, None)
             for action in actions:
                 if action != 'Stop':
-                    values = self.min_value(state.generateSuccessor(opps[0], action), depth, opps[1], alpha, beta)
+                    values = self.min_value(
+                        state.generateSuccessor(opps[0], action), depth, opps[1], alpha, beta)
                     v = min(v, values)
                     if v <= alpha:
                         return v
@@ -91,7 +89,8 @@ class OffensiveAgent(ReflexCaptureAgent):
                 return self.evaluate(state, None)
             for action in actions:
                 if action != 'Stop':
-                    values = self.max_value(state.generateSuccessor(opps[1], action), depth + 1, alpha, beta)
+                    values = self.max_value(
+                        state.generateSuccessor(opps[1], action), depth + 1, alpha, beta)
                     v = min(v, values)
                     if v <= alpha:
                         return v
@@ -112,7 +111,8 @@ class OffensiveAgent(ReflexCaptureAgent):
         v = -(float('inf'))
         for action in actions:
             if action != 'Stop':
-                values = self.min_value(state.generateSuccessor(self.index, action), depth + 1, opps[0], alpha, beta)
+                values = self.min_value(state.generateSuccessor(self.index, action),
+                                        depth + 1, opps[0], alpha, beta)
                 v = max(v, values)
                 if v >= beta:
                     return v
@@ -137,7 +137,8 @@ class OffensiveAgent(ReflexCaptureAgent):
                 features['distanceToFood'] = 1 / minDistance
 
         opponents = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        defenders = [opp for opp in opponents if not opp.isPacman() and opp.getPosition() is not None]
+        defenders = [opp for opp in opponents
+                     if not opp.isPacman() and opp.getPosition() is not None]
 
         if len(defenders) > 0 and myAgent.isPacman():
             opps = [opp for opp in defenders if opp._scaredTimer == 0]
@@ -265,7 +266,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             bestaction = ''
             for action in actions:
                 if action != 'Stop':
-                    value = self.max_value(gameState.generateSuccessor(self.index, action), depth, ninf, pinf)
+                    value = self.max_value(gameState.generateSuccessor(self.index, action),
+                                           depth, ninf, pinf)
                     if value > max:
                         max = value
                         bestaction = action
@@ -287,7 +289,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return self.evaluate(state, None)
             for action in actions:
                 if action != 'Stop':
-                    values = self.min_value(state.generateSuccessor(opps[0], action), depth, opps[1], alpha, beta)
+                    values = self.min_value(
+                        state.generateSuccessor(opps[0], action), depth, opps[1], alpha, beta)
                     v = min(v, values)
                     if v <= alpha:
                         return v
@@ -298,7 +301,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 return self.evaluate(state, None)
             for action in actions:
                 if action != 'Stop':
-                    values = self.max_value(state.generateSuccessor(opps[1], action), depth + 1, alpha, beta)
+                    values = self.max_value(
+                        state.generateSuccessor(opps[1], action), depth + 1, alpha, beta)
                     v = min(v, values)
                     if v <= alpha:
                         return v
@@ -319,7 +323,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         v = -(float('inf'))
         for action in actions:
             if action != 'Stop':
-                values = self.min_value(state.generateSuccessor(self.index, action), depth + 1, opps[0], alpha, beta)
+                values = self.min_value(
+                    state.generateSuccessor(self.index, action), depth + 1, opps[0], alpha, beta)
                 v = max(v, values)
                 if v >= beta:
                     return v
