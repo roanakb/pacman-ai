@@ -3,7 +3,8 @@ import random
 import time
 
 from pacai.agents.capture.capture import CaptureAgent
-from pacai.util import util
+from pacai.util import util, counter
+
 
 class ReflexCaptureAgent(CaptureAgent):
     """
@@ -54,23 +55,23 @@ class ReflexCaptureAgent(CaptureAgent):
         return features * weights
 
     def getFeatures(self, gameState, action):
-        """
-        Returns a dict of features for the state.
-        The keys match up with the return from `ReflexCaptureAgent.getWeights`.
-        """
-
+        features = counter.Counter()
         successor = self.getSuccessor(gameState, action)
+        features['successorScore'] = self.getScore(successor)
 
-        return {
-            'successorScore': self.getScore(successor)
-        }
+        # Compute distance to the nearest food.
+        foodList = self.getFood(successor).asList()
+
+        # This should always be True, but better safe than sorry.
+        if (len(foodList) > 0):
+            myPos = successor.getAgentState(self.index).getPosition()
+            minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+            features['distanceToFood'] = minDistance
+
+        return features
 
     def getWeights(self, gameState, action):
-        """
-        Returns a dict of weights for the state.
-        The keys match up with the return from `ReflexCaptureAgent.getFeatures`.
-        """
-
         return {
-            'successorScore': 1.0
+            'successorScore': 100,
+            'distanceToFood': -1
         }
