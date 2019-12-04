@@ -28,7 +28,7 @@ class OffensiveAgent(ReflexCaptureAgent):
 
     def __init__(self, index, evalFn = 'pacai.core.eval.score'):
         super().__init__(index)
-        self._evaluationFunction = reflection.qualifiedImport(evalFn)
+        self._evaluationFunction = evalFn
 
     def registerInitialState(self, gameState):
         """
