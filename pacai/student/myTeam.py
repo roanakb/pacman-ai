@@ -132,55 +132,64 @@ class OffensiveAgent(ReflexCaptureAgent):
         if (len(foodList) > 0):
             minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
             if minDistance == 0:
-                features['distanceToFood'] = 10
+                features['distanceToFood'] = 100
             else:
                 features['distanceToFood'] = 1 / minDistance
 
         opponents = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        defenders = [a for a in opponents if not a.isPacman() and a.getPosition() is not None]
-        if len(defenders) > 0:
-            minOppDist = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in defenders])
-            if minOppDist == 0:
-                features['distFromDefender'] = 10
+        defenders = [opp for opp in opponents if not opp.isPacman() and opp.getPosition() is not None]
+        if len(defenders) > 0 and myAgent.isPacman():
+            opps = [opp for opp in defenders if opp._scaredTimer == 0]
+            scaredys = [opp for opp in defenders if opp._scaredTimer > 0]
+            if len(opps) > 0:
+                oppD = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in opps])
+                if oppD == 0:
+                    features['distFromDefender'] = 100
+                else:
+                    features['distFromDefender'] = 1 / oppD
             else:
-                features['distFromDefender'] = 1 / minOppDist
+                features['distFromDefender'] = -1
+            if len(scaredys) > 0:
+                scareD = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in scaredys])
+                if scareD == 0:
+                    features['distFromScared'] = 100
+                else:
+                    features['distFromScared'] = 1 / scareD
+            else:
+                features['distFromScared'] = 1
         else:
-            features['distFromDefender'] = -1
-
-        if not myAgent.isPacman():
-            features['distFromDefender'] = 1
-
+            features['distFromDefender'] = 0
+            features['distFromScared'] = 0
         capsuleList = self.getCapsules(successor)
         if len(capsuleList) > 0:
             minCapDist = min([self.getMazeDistance(myPos, food) for food in capsuleList])
             if minCapDist == 0:
-                features['capsuleDist'] = 10
+                features['capsuleDist'] = 100
             else:
                 features['capsuleDist'] = 1 / minCapDist
         else:
             features['capsuleDist'] = 10
 
-        if (action == Directions.STOP):
-            features['stop'] = 1
+        invaders = [a for a in opponents if a.isPacman() and a.getPosition() is not None]
+        if (len(invaders) > 0):
+            minInvDist = min([self.getMazeDistance(myPos, a.getPosition()) for a in invaders])
+            if minInvDist == 0:
+                features['invaderDistance'] = 100
+            else:
+                features['invaderDistance'] = 1 / minInvDist
         else:
-            features['stop'] = 0
-
-        rev = Directions.REVERSE[gameState.getAgentState(self.index).getDirection()]
-        if (action == rev):
-            features['reverse'] = 1
-        else:
-            features['reverse'] = 0
+            features['invaderDistance'] = 10
 
         return features
 
     def getWeights(self, gameState, action):
         return {
             'successorScore': 100,
-            'distanceToFood': 1,
-            'distFromDefender': -2,
-            'capsuleDist': 1,
-            'stop': -100,
-            'reverse': 20
+            'distanceToFood': 2,
+            'distFromDefender': -1,
+            'capsuleDist': 2,
+            'invaderDistance': 1,
+            'distFromScared': 0.5
         }
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
@@ -238,10 +247,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
     def getWeights(self, gameState, action):
         return {
             'numInvaders': -1000,
-            'onDefense': 100,
-            'invaderDistance': -10,
+            'onDefense': 50,
+            'invaderDistance': -100,
             'stop': -100,
-            'reverse': -2,
+            'reverse': -20,
             'distanceToFood': -1,
-            'successorScore': 102
+            'successorScore': 10
         }
