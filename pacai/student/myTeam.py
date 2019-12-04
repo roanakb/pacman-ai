@@ -138,10 +138,6 @@ class OffensiveAgent(ReflexCaptureAgent):
 
         opponents = [successor.getAgentState(i) for i in self.getOpponents(successor)]
         defenders = [opp for opp in opponents if not opp.isPacman() and opp.getPosition() is not None]
-        if myAgent.isPacman():
-            features['onOff'] = 1
-        else:
-            features['onOff'] = 0
 
         if len(defenders) > 0 and myAgent.isPacman():
             opps = [opp for opp in defenders if opp._scaredTimer == 0]
@@ -150,6 +146,8 @@ class OffensiveAgent(ReflexCaptureAgent):
                 oppD = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in opps])
                 if oppD == 0:
                     features['distFromDefender'] = 100
+                elif oppD < 5:
+                    features['distFromDefender'] = 0
                 else:
                     features['distFromDefender'] = 1 / oppD
             else:
@@ -173,11 +171,11 @@ class OffensiveAgent(ReflexCaptureAgent):
         if len(capsuleList) > 0:
             minCapDist = min([self.getMazeDistance(myPos, food) for food in capsuleList])
             if minCapDist == 0:
-                features['capsuleDist'] = 100
+                features['capsuleDist'] = 1000
             else:
                 features['capsuleDist'] = 1 / minCapDist
         else:
-            features['capsuleDist'] = 100
+            features['capsuleDist'] = 10
 
         invaders = [a for a in opponents if a.isPacman() and a.getPosition() is not None]
         if (len(invaders) > 0):
@@ -187,7 +185,7 @@ class OffensiveAgent(ReflexCaptureAgent):
             else:
                 features['invaderDistance'] = 1 / minInvDist
         else:
-            features['invaderDistance'] = 100
+            features['invaderDistance'] = 10
 
         team = []
         if successor.isOnBlueTeam(self.index):
@@ -212,12 +210,11 @@ class OffensiveAgent(ReflexCaptureAgent):
         return {
             'successorScore': 100,
             'distanceToFood': 2,
-            'distFromDefender': -5,
-            'capsuleDist': 3,
+            'distFromDefender': -3,
+            'capsuleDist': 4,
             'invaderDistance': 1,
             'distFromScared': 1,
-            'teammateDist': -0.2,
-            'onOff': 1,
+            'teammateDist': -0.5,
         }
 
     def evaluate(self, gameState, action):
