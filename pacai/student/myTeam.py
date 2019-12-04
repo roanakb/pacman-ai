@@ -28,7 +28,7 @@ class OffensiveAgent(ReflexCaptureAgent):
 
     def __init__(self, index, evalFn = 'pacai.core.eval.score'):
         super().__init__(index)
-        self._evaluationFunction = reflection.qualifiedImport(evalFn)
+        self._evaluationFunction = evalFn
 
     def registerInitialState(self, gameState):
         """
@@ -217,6 +217,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
             features['invaderDistance'] = min(dists)
             features['onDefense'] = 1
+            features['distFromDefender'] = 0
         else:
             features['onDefense'] = 0
             myPos = successor.getAgentState(self.index).getPosition()
@@ -225,6 +226,19 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             features['distanceToFood'] = minDistance
             features['successorScore'] = self.getScore(successor)
             features['invaderDistance'] = 0
+            opponents = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+            defenders = [a for a in opponents if not a.isPacman() and a.getPosition() is not None]
+            if len(defenders) > 0:
+                minOppDist = min([self.getMazeDistance(myPos, opp.getPosition()) for opp in defenders])
+                if minOppDist == 0:
+                    features['distFromDefender'] = 10
+                else:
+                    features['distFromDefender'] = 1 / minOppDist
+            else:
+                features['distFromDefender'] = -1
+
+            if not myState.isPacman():
+                features['distFromDefender'] = 1
 
         if (action == Directions.STOP):
             features['stop'] = 1
@@ -242,6 +256,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             'invaderDistance': -10,
             'stop': -100,
             'reverse': -2,
+            'distFromDefender': -2,
             'distanceToFood': -1,
             'successorScore': 102
         }
